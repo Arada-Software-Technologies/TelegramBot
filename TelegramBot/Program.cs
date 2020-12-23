@@ -9,11 +9,15 @@ namespace TelegramBot
         static void Main(string[] args)
         {
             bot.OnMessage += Bot_OnMessage;
+            bot.StartReceiving();
+            Console.ReadLine();
         }
 
         private static void Bot_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
         {
-            throw new NotImplementedException();
+            if (e.Message.Text == "/start")
+                bot.SendTextMessageAsync(e.Message.Chat.Id, "Enter your word or sentence that is going to translate!" +
+                                                                       "\nእንዲቀየርሎት የሚፈልጉትን ቃል ወይም ዐረፍተ-ነገር ያስገቡ! ");
         }
     }
 }
