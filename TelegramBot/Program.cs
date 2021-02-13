@@ -1,12 +1,23 @@
 ﻿using System;
 using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace TelegramBot
 {
     class Program
     {
+        static int markupID, errMsgID;
+        static string id;
+        static int point;
+
         private static readonly TelegramBotClient bot = new TelegramBotClient("1428816140:AAHZGqsBzRkQ_MEapfWgbReIUyjxuavedLo");
+
+        static string url = "Data Source=LAPTOP-2NIMB6UI\\SQLEXPRESS01;Initial Catalog=DB;Integrated Security=True";
+        
         static void Main(string[] args)
         {
             bot.OnMessage += Bot_OnMessage;
@@ -15,157 +26,265 @@ namespace TelegramBot
         }
 
         private static void Bot_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs e)
-        {
+        {     
             if (e.Message.Text == "/start")
-                bot.SendTextMessageAsync(e.Message.Chat.Id, "Enter your word or sentence that is going to translate!" +
-                                                                       "\nእንዲቀየርሎት የሚፈልጉትን ቃል ወይም ዐረፍተ-ነገር ያስገቡ! ");
+            {
+                    deleteErrorMsg(e);
+                    First(e);  
+            }
             else
             {
-                KeyboardButton[][] button = new KeyboardButton[16][];
-                button[0] = new KeyboardButton[7];
-                button[1] = new KeyboardButton[7];
-                button[2] = new KeyboardButton[7];
-                button[3] = new KeyboardButton[7];
-                button[4] = new KeyboardButton[7];
-                button[5] = new KeyboardButton[7];
-                button[6] = new KeyboardButton[7];
-                button[7] = new KeyboardButton[7];
-                button[8] = new KeyboardButton[7];
-                button[9] = new KeyboardButton[7];
-                button[10] = new KeyboardButton[7];
-                button[11] = new KeyboardButton[7];
-                button[12] = new KeyboardButton[7];
-                button[13] = new KeyboardButton[7];
-                button[14] = new KeyboardButton[7];
-                button[15] = new KeyboardButton[4];
+                if (e.Message.Text == "ምስሊያዊ አነጋገር")
+                {
+                    bot.DeleteMessageAsync(e.Message.Chat.Id, e.Message.MessageId);
+                    bot.DeleteMessageAsync(e.Message.Chat.Id, markupID);
+                    KeyboardButton[][] button = new KeyboardButton[2][];
+                    button[0] = new KeyboardButton[2];
+                    button[1] = new KeyboardButton[1];
+               
+                    button[0][0] = new KeyboardButton("ምስሊያዊ አነጋገር");
+                    button[0][1] = new KeyboardButton("ፈሊጣዊ አነጋገር");
 
-                button[0][0] = new KeyboardButton("af 🇦🇫");
-                button[0][1] = new KeyboardButton("sq 🇦🇱");
-                button[0][2] = new KeyboardButton("am 🇪🇹");
-                button[0][3] = new KeyboardButton("ar 🇦🇪");
-                button[0][4] = new KeyboardButton("hy 🇦🇲");
-                button[0][5] = new KeyboardButton("az 🇦🇿");
-                button[0][6] = new KeyboardButton("eu 🏴󠁥󠁳󠁰󠁶󠁿");
+                    button[1][0] = new KeyboardButton("ጥያቄ");
 
-                button[1][0] = new KeyboardButton("be 🇧🇾");
-                button[1][1] = new KeyboardButton("bn 🇧🇩");
-                button[1][2] = new KeyboardButton("bs 🇧🇦");
-                button[1][3] = new KeyboardButton("bg 🇧🇬");
-                button[1][4] = new KeyboardButton("ca 🏴󠁥󠁳󠁣󠁴󠁿");
-                button[1][5] = new KeyboardButton("ceb 🏴󠁥󠁳󠁧󠁡󠁿");
-                button[1][6] = new KeyboardButton("zh-CN 🇨🇳");
+                    ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
+                    Message data = bot.SendTextMessageAsync(
+                    chatId: e.Message.Chat,
+                    text: dataምስሊያዊ(),
+                    parseMode: ParseMode.Html,
+                     replyMarkup: keyboardMarkup
+                    ).Result;
+                    markupID = data.MessageId;
+                }
+                else if(e.Message.Text== "ፈሊጣዊ አነጋገር")
+                {
+                    bot.DeleteMessageAsync(e.Message.Chat.Id, e.Message.MessageId);
+                    bot.DeleteMessageAsync(e.Message.Chat.Id, markupID);
+                    KeyboardButton[][] button = new KeyboardButton[2][];
+                    button[0] = new KeyboardButton[2];
+                    button[1] = new KeyboardButton[1];
+                
+                    button[0][0] = new KeyboardButton("ምስሊያዊ አነጋገር");
+                    button[0][1] = new KeyboardButton("ፈሊጣዊ አነጋገር");
 
-                button[2][0] = new KeyboardButton("zh-TW 🇨🇳");
-                button[2][1] = new KeyboardButton("co 🏴󠁦󠁲󠁣󠁯󠁲󠁿");
-                button[2][2] = new KeyboardButton("hr 🇭🇷");
-                button[2][3] = new KeyboardButton("cs 🇨🇿");
-                button[2][4] = new KeyboardButton("da 🇩🇰");
-                button[2][5] = new KeyboardButton("nl 🇳🇱");
-                button[2][6] = new KeyboardButton("en 🇬🇧");
+                    button[1][0] = new KeyboardButton("ጥያቄ");
 
-                button[3][0] = new KeyboardButton("eo 🏴󠁥󠁳󠁧󠁡󠁿");
-                button[3][1] = new KeyboardButton("et 🇪🇪");
-                button[3][2] = new KeyboardButton("fi 🇫🇮");
-                button[3][3] = new KeyboardButton("fr 🇫🇷");
-                button[3][4] = new KeyboardButton("fy 🏴󠁮󠁬󠁦󠁲󠁿");
-                button[3][5] = new KeyboardButton("gl 🏴󠁥󠁳󠁧󠁡󠁿");
-                button[3][6] = new KeyboardButton("ka 🇬🇪");
+                    ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
+                    Message data = bot.SendTextMessageAsync(
+                    chatId: e.Message.Chat,
+                    text: dataፈሊጣዊ(),
+                    parseMode: ParseMode.Html,
+                    replyMarkup: keyboardMarkup
+                    ).Result;
+                    markupID = data.MessageId;
+                }
+                else if (e.Message.Text == "ጥያቄ")
+                {
+                    string d1="";
+                    string d2="";
+                    string d3="";
+                    string d4="";
+                    if (!String.Equals(d1, d2) && !String.Equals(d2, d3) && !string.Equals(d1, d3))
+                    {
+                        d1 += dataመልስ();
+                        d2 += dataመልስ();
+                        d3 += dataመልስ();
+                        d4 += dataመልስ();
+                    }
+                    if (e.Message.Text == dataመልስ())
+                    {
+                        point += 10;
+                        bot.DeleteMessageAsync(e.Message.Chat.Id, e.Message.MessageId);
+                        bot.DeleteMessageAsync(e.Message.Chat.Id, markupID);
+                       
+                        
+                        
+                            KeyboardButton[][] button = new KeyboardButton[2][];
+                            button[0] = new KeyboardButton[2];
+                            button[1] = new KeyboardButton[2];
 
-                button[4][0] = new KeyboardButton("de 🇩🇪");
-                button[4][1] = new KeyboardButton("el 🇬🇷");
-                button[4][2] = new KeyboardButton("gu 🏴󠁩󠁮󠁧󠁪󠁿");
-                button[4][3] = new KeyboardButton("ht 🇭🇹");
-                button[4][4] = new KeyboardButton("ha 🏴󠁥󠁳󠁧󠁡󠁿");
-                button[4][5] = new KeyboardButton("haw 🏴󠁵󠁳󠁨󠁩󠁿");
-                button[4][6] = new KeyboardButton("he(iw) 🏴󠁥󠁳󠁧󠁡󠁿");
+                            button[0][0] = new KeyboardButton(d1);
+                            button[0][1] = new KeyboardButton(d2);
 
-                button[5][0] = new KeyboardButton("hi 🇮🇳");
-                button[5][1] = new KeyboardButton("hmn 🏴󠁥󠁳󠁧󠁡󠁿");
-                button[5][2] = new KeyboardButton("hu 🇭🇺");
-                button[5][3] = new KeyboardButton("is 🇮🇸");
-                button[5][4] = new KeyboardButton("ig 🇳🇬");
-                button[5][5] = new KeyboardButton("id 🇮🇩");
-                button[5][6] = new KeyboardButton("ga 🇮🇪");
+                            button[1][0] = new KeyboardButton(d3);
+                            button[1][1] = new KeyboardButton(d4);
+                            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
+                            Message data = bot.SendTextMessageAsync(
+                            chatId: e.Message.Chat,
+                            text: dataጥያቄ(),
+                            parseMode: ParseMode.Html,
+                             replyMarkup: keyboardMarkup
+                            ).Result;
+                            markupID = data.MessageId;
+                        
+                        
 
-                button[6][0] = new KeyboardButton("it 🇮🇹");
-                button[6][1] = new KeyboardButton("ja 🇯🇵");
-                button[6][2] = new KeyboardButton("jv 🇮🇩");
-                button[6][3] = new KeyboardButton("kn 🇮🇳");
-                button[6][4] = new KeyboardButton("kk 🇰🇿");
-                button[6][5] = new KeyboardButton("km 🇰🇭");
-                button[6][6] = new KeyboardButton("rw 🇷🇼");
+                    }
+                    else
+                    {
 
-                button[7][0] = new KeyboardButton("ko 🇰🇷");
-                button[7][1] = new KeyboardButton("ku 🇮🇷");
-                button[7][2] = new KeyboardButton("ky 🇰🇬");
-                button[7][3] = new KeyboardButton("lo 🇱🇦");
-                button[7][4] = new KeyboardButton("la 🇦🇷");
-                button[7][5] = new KeyboardButton("lv 🇱🇻");
-                button[7][6] = new KeyboardButton("lt 🇱🇹");
+                        bot.DeleteMessageAsync(e.Message.Chat.Id, e.Message.MessageId);
+                        bot.DeleteMessageAsync(e.Message.Chat.Id, markupID);
+                        
+                        KeyboardButton[][] button = new KeyboardButton[2][];
+                        button[0] = new KeyboardButton[2];
+                        button[1] = new KeyboardButton[2];
 
-                button[8][0] = new KeyboardButton("lb 🇩🇪");
-                button[8][1] = new KeyboardButton("mk 🇲🇰");
-                button[8][2] = new KeyboardButton("mg 🇲🇬");
-                button[8][3] = new KeyboardButton("ms 🇧🇳");
-                button[8][4] = new KeyboardButton("ml 🇮🇳");
-                button[8][5] = new KeyboardButton("mt 🇲🇹");
-                button[8][6] = new KeyboardButton("mi 🇳🇿");
+                        button[0][0] = new KeyboardButton(d1);
+                        button[0][1] = new KeyboardButton(d2);
 
-                button[9][0] = new KeyboardButton("mr 🇮🇳");
-                button[9][1] = new KeyboardButton("mn 🇲🇳");
-                button[9][2] = new KeyboardButton("my 🇲🇲");
-                button[9][3] = new KeyboardButton("ne 🇳🇵");
-                button[9][4] = new KeyboardButton("no 🇳🇴");
-                button[9][5] = new KeyboardButton("ny 🇲🇼");
-                button[9][6] = new KeyboardButton("or 🇮🇳");
+                        button[1][0] = new KeyboardButton(d3);
+                        button[1][1] = new KeyboardButton(d4);
+                        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
+                        Message data = bot.SendTextMessageAsync(
+                        chatId: e.Message.Chat,
+                        text: dataጥያቄ(),
+                        parseMode: ParseMode.Html,
+                         replyMarkup: keyboardMarkup
+                        ).Result;
+                        markupID = data.MessageId;
+                    }
+                }
+            }
+        }
 
-                button[10][0] = new KeyboardButton("ps 🇮🇷");
-                button[10][1] = new KeyboardButton("fa 🇮🇷");
-                button[10][2] = new KeyboardButton("pl 🇵🇱");
-                button[10][3] = new KeyboardButton("pt 🇵🇹");
-                button[10][4] = new KeyboardButton("pa 🇮🇳");
-                button[10][5] = new KeyboardButton("ro 🇷🇴");
-                button[10][6] = new KeyboardButton("ru 🇷🇺");
+        static string dataምስሊያዊ()
+        {
+            using (SqlConnection con = new SqlConnection(url))
+            {
+                string msg = ""; 
+                SqlCommand cmd = new SqlCommand("spView", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                con.Open();
 
-                button[11][0] = new KeyboardButton("sm 🇼🇸");
-                button[11][1] = new KeyboardButton("gd 🏴󠁥󠁳󠁣󠁴󠁿");
-                button[11][2] = new KeyboardButton("sr 🇷🇸");
-                button[11][3] = new KeyboardButton("st 🏴󠁥󠁳󠁣󠁴󠁿");
-                button[11][4] = new KeyboardButton("sn 🇿🇼");
-                button[11][5] = new KeyboardButton("sd 🏴󠁥󠁳󠁣󠁴󠁿");
-                button[11][6] = new KeyboardButton("si 🇱🇰");
+                SqlDataAdapter reader = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
 
-                button[12][0] = new KeyboardButton("sk 🇸🇰");
-                button[12][1] = new KeyboardButton("sl 🇸🇮");
-                button[12][2] = new KeyboardButton("so 🇸🇴");
-                button[12][3] = new KeyboardButton("es 🇪🇸");
-                button[12][4] = new KeyboardButton("su 🇮🇩");
-                button[12][5] = new KeyboardButton("sw 🇨🇩");
-                button[12][6] = new KeyboardButton("sv 🇸🇪");
+                reader.Fill(dt);
 
-                button[13][0] = new KeyboardButton("tl 🇵🇭");
-                button[13][1] = new KeyboardButton("tg 🇹🇯");
-                button[13][2] = new KeyboardButton("ta 🇮🇳");
-                button[13][3] = new KeyboardButton("tt 🇹🇷");
-                button[13][4] = new KeyboardButton("te 🇮🇳");
-                button[13][5] = new KeyboardButton("th 🇹🇭");
-                button[13][6] = new KeyboardButton("tr 🇹🇷");
+                foreach (DataRow row in dt.Rows)
+                {
 
-                button[14][0] = new KeyboardButton("tk 🇹🇲");
-                button[14][1] = new KeyboardButton("uk 🇺🇦");
-                button[14][2] = new KeyboardButton("ur 🇵🇰");
-                button[14][3] = new KeyboardButton("ug 🇹🇷");
-                button[14][4] = new KeyboardButton("uz 🇺🇿");
-                button[14][5] = new KeyboardButton("vi 🇻🇳");
-                button[14][6] = new KeyboardButton("cy 🇬🇧");
+                    msg += row["Sentence"].ToString() + "\n";
+                }
 
-                button[15][0] = new KeyboardButton("xh 🇿🇼");
-                button[15][1] = new KeyboardButton("yi 🇷🇺");
-                button[15][2] = new KeyboardButton("yo 🇳🇬");
-                button[15][3] = new KeyboardButton("zu 🏴󠁺󠁡󠁮󠁬󠁿");
+                con.Close();
+                return msg;
+             
+            }
 
-                ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
-                bot.SendTextMessageAsync(e.Message.Chat, "Selecte the language!" + "\n ይምረጡ!", replyMarkup: keyboardMarkup);
+        }
+        static string dataፈሊጣዊ()
+        {
+            using (SqlConnection con = new SqlConnection(url))
+            {
+                string msg = "";
+                SqlCommand cmd = new SqlCommand("spViewA", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                con.Open();
+
+                SqlDataAdapter reader = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+
+                reader.Fill(dt);
+
+                foreach (DataRow row in dt.Rows)
+                {
+
+                    msg += row["Sentence"].ToString() + "\n";
+                }
+
+                con.Close();
+                return msg;
+            }
+        }
+
+        static string dataጥያቄ()
+        {
+            using (SqlConnection con = new SqlConnection(url))
+            {
+                string msg = "";
+               
+                SqlCommand cmd = new SqlCommand("spQuation", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                con.Open();
+
+                SqlDataAdapter reader = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+
+                reader.Fill(dt);
+
+                foreach (DataRow row in dt.Rows)
+                {
+
+                    msg += row["Quations"].ToString(); ;
+
+                }
+
+                con.Close();
+                return msg;
+            }
+        }
+
+        static string dataመልስ()
+        {
+            using (SqlConnection con = new SqlConnection(url))
+            {
+                string msg = "";
+                msg = id;
+                SqlCommand cmd = new SqlCommand("spQuation", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                con.Open();
+
+                SqlDataAdapter reader = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+
+                reader.Fill(dt);
+
+                foreach (DataRow row in dt.Rows)
+                {
+
+                    msg += row["Answere"].ToString() ;
+                }
+
+                con.Close();
+                return msg;
+            }
+            
+        }
+        static void First(Telegram.Bot.Args.MessageEventArgs e)
+        {
+            KeyboardButton[][] button = new KeyboardButton[2][];
+            button[0] = new KeyboardButton[2];
+            button[1] = new KeyboardButton[1];
+            
+            button[0][0] = new KeyboardButton("ምስሊያዊ አነጋገር");
+            button[0][1] = new KeyboardButton("ፈሊጣዊ አነጋገር");
+
+            button[1][0] = new KeyboardButton("ጥያቄ");
+
+            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup(button);
+            bot.DeleteMessageAsync(e.Message.Chat.Id, e.Message.MessageId);
+            Message Keyboard_msg = bot.SendTextMessageAsync(
+                    chatId: e.Message.Chat,
+                    text: "Selecte your choice! የሚፈልጉትን ይምረጡ!",
+                    parseMode: ParseMode.Html,
+                    disableNotification: true,
+                    replyMarkup: keyboardMarkup
+                    ).Result;
+            markupID = Keyboard_msg.MessageId;
+        }
+
+        static void deleteErrorMsg(Telegram.Bot.Args.MessageEventArgs e)
+        {
+            //catches message not found exception
+            try
+            {
+                bot.DeleteMessageAsync(e.Message.Chat.Id, errMsgID);
+            }
+            catch (Exception)
+            {
+
             }
         }
     }
